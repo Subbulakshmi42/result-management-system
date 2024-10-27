@@ -1,0 +1,200 @@
+result-management-system/
+├── config/
+│   └── db.js               # Database configuration
+├── controllers/
+│   ├── studentController.js # Controller for student operations
+│   ├── subjectController.js # Controller for subject operations
+│   └── resultController.js  # Controller for result operations
+├── models/
+│   ├── Student.js          # Student schema
+│   ├── Subject.js          # Subject schema
+│   └── Result.js           # Result schema
+├── routes/
+│   ├── studentRoutes.js    # Routes for student operations
+│   ├── subjectRoutes.js    # Routes for subject operations
+│   └── resultRoutes.js     # Routes for result operations
+├── middlewares/
+│   └── errorHandler.js     # Error handling middleware
+├── package.json
+├── server.js               # Server entry point
+└── .env                    # Environment variables
+npm init -y
+npm install express mongoose dotenv nodemon
+"scripts": {
+  "start": "nodemon server.js"
+}
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log("MongoDB connected...");
+    } catch (error) {
+        console.error("MongoDB connection failed:", error.message);
+        process.exit(1);
+    }
+};
+
+module.exports = connectDB;
+const mongoose = require('mongoose');
+
+const studentSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    rollNumber: { type: String, unique: true, required: true },
+    class: { type: String, required: true }
+});
+
+module.exports = mongoose.model('Student', studentSchema);
+const mongoose = require('mongoose');
+
+const subjectSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    code: { type: String, unique: true, required: true }
+});
+
+module.exports = mongoose.model('Subject', subjectSchema);
+const mongoose = require('mongoose');
+
+const resultSchema = new mongoose.Schema({
+    student: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+    subject: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
+    marks: { type: Number, required: true }
+});
+
+module.exports = mongoose.model('Result', resultSchema);
+const Student = require('../models/Student');
+
+// Add a new student
+exports.addStudent = async (req, res) => {
+    try {
+        const student = new Student(req.body);
+        await student.save();
+        res.status(201).json(student);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Get all students
+exports.getAllStudents = async (req, res) => {
+    try {
+        const students = await Student.find();
+        res.json(students);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+const Subject = require('../models/Subject');
+
+// Add a new subject
+exports.addSubject = async (req, res) => {
+    try {
+        const subject = new Subject(req.body);
+        await subject.save();
+        res.status(201).json(subject);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Get all subjects
+exports.getAllSubjects = async (req, res) => {
+    try {
+        const subjects = await Subject.find();
+        res.json(subjects);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+const Result = require('../models/Result');
+
+// Add a new result
+exports.addResult = async (req, res) => {
+    try {
+        const result = new Result(req.body);
+        await result.save();
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Get all results for a student
+exports.getResultsForStudent = async (req, res) => {
+    try {
+        const results = await Result.find({ student: req.params.studentId }).populate('subject');
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+const express = require('express');
+const router = express.Router();
+const studentController = require('../controllers/studentController');
+
+router.post('/students', studentController.addStudent);
+router.get('/students', studentController.getAllStudents);
+
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const subjectController = require('../controllers/subjectController');
+
+router.post('/subjects', subjectController.addSubject);
+router.get('/subjects', subjectController.getAllSubjects);
+
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const subjectController = require('../controllers/subjectController');
+
+router.post('/subjects', subjectController.addSubject);
+router.get('/subjects', subjectController.getAllSubjects);
+
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const subjectController = require('../controllers/subjectController');
+
+router.post('/subjects', subjectController.addSubject);
+router.get('/subjects', subjectController.getAllSubjects);
+
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const resultController = require('../controllers/resultController');
+
+router.post('/results', resultController.addResult);
+router.get('/results/:studentId', resultController.getResultsForStudent);
+
+module.exports = router;
+const express = require('express');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+const studentRoutes = require('./routes/studentRoutes');
+const subjectRoutes = require('./routes/subjectRoutes');
+const resultRoutes = require('./routes/resultRoutes');
+
+dotenv.config();
+const app = express();
+
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(express.json());
+
+// Routes
+app.use('/api', studentRoutes);
+app.use('/api', subjectRoutes);
+app.use('/api', resultRoutes);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+MONGO_URI=your_mongo_uri
+PORT=5000
